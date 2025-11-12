@@ -1,0 +1,37 @@
+{
+  "name": "@danielsimonjr/everything-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Everything search engine - blazing fast file search for Windows",
+  "main": "index.js",
+  "bin": {
+    "everything-mcp": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "everything",
+    "search",
+    "file-search",
+    "windows",
+    "es.exe",
+    "voidtools"
+  ],
+  "author": "Daniel Simon Jr. (https://github.com/danielsimonjr)",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielsimonjr/everything-mcp.git"
+  },
+  "homepage": "https://github.com/danielsimonjr/everything-mcp"
+}
