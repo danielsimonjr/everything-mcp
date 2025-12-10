@@ -28,3 +28,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 .tmp/
+
+# Claude Code
+.claude/
+.mcp.json
