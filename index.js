@@ -10,7 +10,7 @@ const { spawn } = require("child_process");
 const path = require("path");
 
 // Path to es.exe - can be overridden via environment variable
-const ES_PATH = process.env.ES_PATH || "C:\\Users\\danie\\scoop\\apps\\everything\\current\\es.exe";
+const ES_PATH = process.env.ES_PATH || "C:\\Program Files\\Everything\\es.exe";
 
 /**
  * Execute es.exe with the given arguments

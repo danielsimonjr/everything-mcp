@@ -20,9 +20,7 @@ Model Context Protocol (MCP) server for [Everything](https://www.voidtools.com/)
 
 1. **Download Everything**: https://www.voidtools.com/downloads/
 2. **Install Everything** and let it index your drives
-3. **Verify es.exe** (command-line interface) is available:
-   - Usually located at: `C:\\Program Files\\Everything\\es.exe`
-   - Or install via Scoop: `scoop install everything`
+3. **Verify es.exe** (command-line interface) is available at: `C:\Program Files\Everything\es.exe`
 
 ## Installation
 
