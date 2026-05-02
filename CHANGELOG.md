@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Documentation
+- Add CycloneDX SBOM (sbom.json).
+
 ## [1.0.1] - 2025-12-09
 
 ### Fixed
