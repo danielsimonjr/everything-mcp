@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "everything-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/bundle/index.mjs"
+      ],
+      "env": {}
+    }
+  }
+}
