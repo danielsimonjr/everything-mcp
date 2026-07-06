@@ -22,7 +22,7 @@ If a tool isn't loaded, fetch its schema first: `ToolSearch select:mcp__plugin_e
 
 ## Gotcha: Everything does NOT index `~\Dropbox` on this machine
 
-Verified this session: Everything's index excludes `C:\Users\danie\Dropbox` on this machine (the reason for the exclusion wasn't investigated — only the observed behavior). A `search` call scoped to or containing Dropbox paths will silently miss files that exist there. **For any Dropbox-rooted search, don't trust `search` — fall back to a direct filesystem walk** (`Get-ChildItem -Recurse` via PowerShell, or the `fzf-mcp` server's `fuzzy_search_files`) instead of assuming absence from an empty `search` result.
+Observed on this machine: Everything's index excludes `C:\Users\danie\Dropbox` on this machine (the reason for the exclusion wasn't investigated — only the observed behavior). A `search` call scoped to or containing Dropbox paths will silently miss files that exist there. **For any Dropbox-rooted search, don't trust `search` — fall back to a direct filesystem walk** (`Get-ChildItem -Recurse` via PowerShell, or the `fzf-mcp` server's `fuzzy_search_files`) instead of assuming absence from an empty `search` result.
 
 ## Everything vs fzf
 
