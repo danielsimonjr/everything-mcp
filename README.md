@@ -150,6 +150,16 @@ Get detailed information about a specific file.
 }
 ```
 
+## Companion skill
+
+This plugin ships a companion skill, `everything` (`everything-mcp:everything`,
+slash trigger `/everything`), at `skills/everything/SKILL.md`. It's a judgment
+layer over the 2 tools above — no new tools of its own — that steers you
+toward `search` for name/pattern lookups and `get_file_info` for details on a
+known path, and flags a machine-specific gotcha: Everything's index excludes
+`~\Dropbox`, so Dropbox-rooted searches silently miss files and should fall
+back to a filesystem walk (e.g. `fzf-mcp`'s `fuzzy_search_files`) instead.
+
 ## Everything Search Syntax
 
 Everything supports powerful search syntax:
