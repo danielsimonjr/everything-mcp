@@ -4,10 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Documentation
-- Add CycloneDX SBOM (sbom.json).
-
-## [1.1.0]
+## [1.1.0] - 2026-07-06
 
 ### Added
 - **Companion skill** — `everything` (`everything-mcp:everything`,
@@ -16,6 +13,9 @@ All notable changes to this project will be documented in this file.
   known path, and flags the `~\Dropbox` index-gap gotcha (fall back to a
   filesystem walk, e.g. `fzf-mcp`'s `fuzzy_search_files`). Ships at
   `skills/everything/SKILL.md`.
+
+### Documentation
+- Add CycloneDX SBOM (sbom.json).
 
 ## [1.0.1] - 2025-12-09
 
