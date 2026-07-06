@@ -39,3 +39,6 @@ build/
 venv/
 __pycache__/
 .env
+
+# SDD scratch/ledger
+.superpowers/
