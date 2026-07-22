@@ -33977,7 +33977,7 @@ var require_index = __commonJS({
     } = require_types2();
     var { spawn } = __require("child_process");
     var path = __require("path");
-    var ES_PATH = process.env.ES_PATH || "C:\\Program Files\\Everything\\es.exe";
+    var ES_PATH = process.env.ES_PATH || "es.exe";
     function executeEverything(args) {
       return new Promise((resolve, reject) => {
         const process2 = spawn(ES_PATH, args);

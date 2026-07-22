@@ -6,7 +6,9 @@
       "args": [
         "${CLAUDE_PLUGIN_ROOT}/bundle/index.mjs"
       ],
-      "env": {}
+      "env": {
+        "ES_PATH": "C:\\Program Files\\Everything\\es.exe"
+      }
     }
   }
 }
