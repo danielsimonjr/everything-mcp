@@ -1,0 +1,18 @@
+# Normalize line endings: store text as LF in the repo, check out LF.
+# Stops the chronic CRLF churn (whole-file "modified" diffs) on Windows.
+* text=auto eol=lf
+
+# Explicit text types (belt-and-suspenders)
+*.js    text eol=lf
+*.mjs   text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+# Binaries: never normalize
+*.png   binary
+*.jpg   binary
+*.gif   binary
+*.exe   binary
+*.ico   binary
