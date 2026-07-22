@@ -34,7 +34,7 @@ absolute-path-only **and** zero-config discovery of the winget location.
 ## Runtime gotcha (maintainer's machine)
 
 The MCP that actually runs is a **separate copy** at
-`C:\Users\USER\servers\src\everything-mcp\index.js` (per `.claude.json`), not this
+`%USERPROFILE%\servers\src\everything-mcp\index.js` (per `.claude.json`), not this
 repo. `.claude.json` now sets `ES_PATH` to the winget path. Repo commits do not change
 the running server until redeployed to `servers\src`. A **Claude Code restart** is
 needed to activate a changed `.claude.json` `ES_PATH`.

@@ -5,13 +5,8 @@ Open work and recently-done, for continuity. Pairs with `AGENTS.md` / `MEMORY.md
 
 ## Open
 
-- [ ] **Kill the CRLF churn.** Add `.gitattributes` (`* text=auto eol=lf`), then
-      `git add --renormalize .` and commit. ~17 files currently show dirty as pure
-      line-ending flips; this clears them all and stops it recurring.
-- [ ] **Dependabot alert #29** (moderate) on the default branch — review and patch.
-      `https://github.com/danielsimonjr/everything-mcp/security/dependabot/29`
 - [ ] **Redeploy source → runtime.** The running MCP loads
-      `C:\Users\USER\servers\src\everything-mcp\index.js`, a copy that has diverged
+      `%USERPROFILE%\servers\src\everything-mcp\index.js`, a copy that has diverged
       from this repo. Sync it (copy or symlink) so runtime matches `main`, then restart
       Claude Code.
 - [ ] **Add a real build step.** With no `esbuild`/build script, `bundle/index.mjs` is
@@ -26,3 +21,6 @@ Open work and recently-done, for continuity. Pairs with `AGENTS.md` / `MEMORY.md
 - [x] Security: absolute-path `resolveEsPath()`, no bare-filename spawn (`d4f08f8`).
 - [x] Merged PR #13 (setup-node bump) and deleted its branch.
 - [x] Added `AGENTS.md` / `MEMORY.md` / `TODO.md`.
+- [x] `.gitattributes` — LF normalization, kills the CRLF churn (`3fed2f8`).
+- [x] Dependabot #29 — override `@hono/node-server` to `>=2.0.5` (→ 2.0.11) (`36ec58f`).
+- [x] Sanitized the maintainer path (`USER` → `%USERPROFILE%`) in the docs.

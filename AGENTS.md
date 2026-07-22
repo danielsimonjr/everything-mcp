@@ -23,7 +23,7 @@ and exposes two tools: `search` and `get_file_info`. Depends on
 
 2. **The running server is NOT this repo (on the maintainer's machine).**
    Claude Code loads a *separate copy* at
-   `C:\Users\USER\servers\src\everything-mcp\index.js` via `.claude.json`. Changes
+   `%USERPROFILE%\servers\src\everything-mcp\index.js` via `.claude.json`. Changes
    here do **not** affect the running MCP until they are redeployed to `servers\src`
    (or `.claude.json` is repointed). See `TODO.md`.
 
@@ -71,5 +71,5 @@ and exposes two tools: `search` and `get_file_info`. Depends on
 ```bash
 node --check index.js
 node --check bundle/index.mjs
-git diff --cached | grep -i 'USER\|WinGet' || echo "no personal path staged"
+git diff --cached | grep -i "$USERNAME" || echo "no personal path staged"
 ```
