@@ -33977,7 +33977,25 @@ var require_index = __commonJS({
     } = require_types2();
     var { spawn } = __require("child_process");
     var path = __require("path");
-    var ES_PATH = process.env.ES_PATH || "es.exe";
+    var fs = __require("fs");
+    function resolveEsPath() {
+      const configured = process.env.ES_PATH;
+      if (configured) {
+        if (!path.isAbsolute(configured)) {
+          throw new Error(`ES_PATH must be an absolute path, got: ${configured}`);
+        }
+        return configured;
+      }
+      const candidates = [
+        path.join(process.env.ProgramFiles || "C:\\Program Files", "Everything", "es.exe"),
+        path.join(process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)", "Everything", "es.exe"),
+        path.join(process.env.LOCALAPPDATA || "", "Microsoft", "WinGet", "Links", "es.exe"),
+        path.join(process.env.USERPROFILE || "", "scoop", "apps", "everything", "current", "es.exe")
+      ].filter((p) => p && fs.existsSync(p));
+      if (candidates.length) return candidates[0];
+      throw new Error("es.exe not found. Set the ES_PATH environment variable to its absolute path (see .mcp.json).");
+    }
+    var ES_PATH = resolveEsPath();
     function executeEverything(args) {
       return new Promise((resolve, reject) => {
         const process2 = spawn(ES_PATH, args);

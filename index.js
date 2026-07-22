@@ -8,10 +8,32 @@ const {
 } = require("@modelcontextprotocol/sdk/types.js");
 const { spawn } = require("child_process");
 const path = require("path");
+const fs = require("fs");
 
-// Path to es.exe - set via the ES_PATH environment variable (see .mcp.json).
-// Falls back to "es.exe" so the OS resolves it from PATH when ES_PATH is unset.
-const ES_PATH = process.env.ES_PATH || "es.exe";
+// Resolve es.exe to an ABSOLUTE path. Never spawn a bare filename on Windows,
+// where CreateProcess searches the current working directory first (a
+// binary-planting risk). Set ES_PATH to override; otherwise probe known
+// install locations and fail loudly if none are found.
+function resolveEsPath() {
+  const configured = process.env.ES_PATH;
+  if (configured) {
+    if (!path.isAbsolute(configured)) {
+      throw new Error(`ES_PATH must be an absolute path, got: ${configured}`);
+    }
+    return configured;
+  }
+  const candidates = [
+    path.join(process.env.ProgramFiles || "C:\\Program Files", "Everything", "es.exe"),
+    path.join(process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)", "Everything", "es.exe"),
+    path.join(process.env.LOCALAPPDATA || "", "Microsoft", "WinGet", "Links", "es.exe"),
+    path.join(process.env.USERPROFILE || "", "scoop", "apps", "everything", "current", "es.exe"),
+  ].filter((p) => p && fs.existsSync(p));
+  if (candidates.length) return candidates[0];
+  throw new Error(
+    "es.exe not found. Set the ES_PATH environment variable to its absolute path (see .mcp.json)."
+  );
+}
+const ES_PATH = resolveEsPath();
 
 /**
  * Execute es.exe with the given arguments
