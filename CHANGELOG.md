@@ -11,6 +11,21 @@ All notable changes to this project will be documented in this file.
   tested the OS the server actually ships on. The `build` job now runs a
   `[ubuntu-latest, windows-latest]` matrix.
 
+### Security
+
+- **Resolve `es.exe` to an absolute path; never spawn a bare name** (CWE-426/427,
+  executable search-path hijacking / binary planting). `ES_PATH` previously fell back to
+  a hardcoded `C:\Program Files\Everything\es.exe` and briefly to a bare `"es.exe"`; on
+  Windows `spawn("es.exe")` makes `CreateProcess` search the CWD first. `resolveEsPath()`
+  now requires an absolute `ES_PATH` (throws otherwise), probes known absolute install
+  locations (Program Files, Program Files (x86), winget Links, scoop), and throws a clear
+  error instead of a bare name. Mirrored in `bundle/index.mjs`.
+- **Force `@hono/node-server` >= 2.0.5 via an npm `override`** (Dependabot #29 — path
+  traversal in `serve-static` on Windows via an encoded backslash `%5C`). It is a
+  transitive dependency of `@modelcontextprotocol/sdk` (`^1.19.9`, which capped it below
+  the patch). This server uses only the stdio transport, so `serve-static` is never
+  reached, but the override raises it to 2.0.11 to clear the alert.
+
 ## [1.1.0] - 2026-07-06
 
 ### Added
