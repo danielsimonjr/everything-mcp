@@ -23,4 +23,4 @@ Open work and recently-done, for continuity. Pairs with `AGENTS.md` / `MEMORY.md
 - [x] Added `AGENTS.md` / `MEMORY.md` / `TODO.md`.
 - [x] `.gitattributes` — LF normalization, kills the CRLF churn (`3fed2f8`).
 - [x] Dependabot #29 — override `@hono/node-server` to `>=2.0.5` (→ 2.0.11) (`36ec58f`).
-- [x] Sanitized the maintainer path (`USER` → `%USERPROFILE%`) in the docs.
+- [x] Sanitized the maintainer's local path (username → `%USERPROFILE%`) in the docs.
