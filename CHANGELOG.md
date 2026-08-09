@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - **Windows CI leg.** CI ran on `ubuntu-latest` only — but Windows is the *production*
-  platform for this MCP server (it runs on Daniel's Windows box), so CI had never once
+  platform for this MCP server (it runs on the user's Windows box), so CI had never once
   tested the OS the server actually ships on. The `build` job now runs a
   `[ubuntu-latest, windows-latest]` matrix.
 
