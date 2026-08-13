@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-12
+
+> Rolls up two gaps: the companion-skill addition below (`1.1.0`, dated
+> 2026-07-06) was documented in this CHANGELOG but never bumped in
+> `package.json`, tagged in git, or published to npm — pushed is not
+> published. This release carries it forward together with the security
+> fixes below.
+
 ### Added
 
 - **Windows CI leg.** CI ran on `ubuntu-latest` only — but Windows is the *production*

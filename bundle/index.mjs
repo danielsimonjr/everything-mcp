@@ -34022,7 +34022,7 @@ var require_index = __commonJS({
     var server = new Server(
       {
         name: "everything-mcp",
-        version: "1.0.0"
+        version: "1.2.0"
       },
       {
         capabilities: {
