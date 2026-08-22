@@ -29,9 +29,13 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: '1.4.0'
+      - run: bun install --frozen-lockfile
       # --if-present: run each stage only if the repo defines it (universal template).
-      - run: npm run typecheck --if-present
-      - run: npm run lint --if-present
-      - run: npm test --if-present
-      - run: npm run build --if-present
+      - run: bun run --if-present typecheck
+      - run: bun run --if-present lint
+      - run: bun run --if-present test
+      - run: bun run --if-present build
