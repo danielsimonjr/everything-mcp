@@ -4,6 +4,15 @@ on:
   push:
     branches: [main]
   pull_request:
+  # An auto-merged Dependabot PR is pushed with GITHUB_TOKEN, and GitHub's recursion guard
+  # suppresses workflow triggers for those pushes -- so the default branch can carry a
+  # dependency commit with NO run at all. Measured 2026-08-28 across this repo's history.
+  # The PR gate still holds (branch protection requires the checks), so what is lost is
+  # post-merge telemetry, not the gate. A nightly run re-exercises the branch regardless of
+  # who pushed it; workflow_dispatch allows a gap to be backfilled on the spot.
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
 
 # Least privilege: CI only needs to read the repo.
 permissions:
