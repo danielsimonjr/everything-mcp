@@ -38,3 +38,30 @@ jobs:
       - run: bun run --if-present lint
       - run: bun run --if-present test
       - run: bun run --if-present build
+
+      # Production runtime is NODE; Bun is the dev toolchain. Every step above runs under
+      # Bun, so without this the shipped artifact is never executed by the runtime that
+      # actually runs it. The six repos reverted during the Bun migration all failed there:
+      # on deps Bun's non-hoisted node_modules resolved and Node did not.
+      #
+      # Fails on a throw, a syntax error, or an unresolvable import. A server that
+      # self-starts on import PASSES after 5s -- it started and did not crash. Verified
+      # failure-capable before adoption (corrupt artifact -> exit 1; missing dep -> exit 1).
+      - name: Node runtime smoke (the shipped artifact must load under Node)
+        run: |
+          node --input-type=module -e '
+            const entry = "./index.js";
+            const t = setTimeout(() => {
+              console.log("PASS: self-started under Node, no crash within 5s");
+              process.exit(0);
+            }, 5000);
+            import(entry).then(() => {
+              clearTimeout(t);
+              console.log("PASS: loaded cleanly under Node");
+              process.exit(0);
+            }).catch((e) => {
+              clearTimeout(t);
+              console.error("FAIL: " + entry + " did not load under Node -> " + e.message);
+              process.exit(1);
+            });
+          '
