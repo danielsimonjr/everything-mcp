@@ -4,8 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Mark both MCP tools with `readOnlyHint: true`, allowing clients to apply an accurate
+  read-only approval policy.
+- Add a cross-platform Node test suite for tool metadata, argument construction, validation,
+  exit-code diagnostics, and source/bundle parity.
+
 ### Security
 
+- **Prevent `es.exe` option injection through tool input.** Search text and filenames now follow
+  the ES `--` option boundary, so values such as `-exit`, `-reindex`, or `-inc-run-count` cannot
+  be interpreted as mutating CLI switches. `maxResults` is also restricted to an integer from
+  1 through 1000 in both the JSON Schema and runtime validation. This requires ES 1.1.0.37 or
+  newer; the repository's signed x86 copy is updated from 1.1.0.27 to 1.1.0.37.
 - **`qs` bumped 6.15.2 -> 6.16.0 in the lockfile** (GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g, both
   MEDIUM, runtime scope). `npm audit --omit=dev` now reports 0 vulnerabilities.
   **Scope of the exposure, measured rather than assumed:** the published package ships no lockfile,
@@ -17,6 +29,14 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Treat only ES exit code 0 as success. Exit code 1 means window-class registration failed, not
+  "no results". Exit code 8 now explains that the Everything search client must be running in
+  the current user session and that the Windows service alone is insufficient.
+- Correct the documentation for Everything Service, search-client IPC, startup, minimum ES
+  version, Scoop's `everything-cli` install path, JSON escaping, and standard-user setup.
+- Make `parentPath` search inside the supplied directory with ES `-path`; the previous
+  `-parent-path` switch searched from the supplied path's parent instead. ES now also uses its
+  standard Windows argument parser so paths containing spaces are preserved correctly.
 - **Auto-merged Dependabot commits could land on the default branch with no CI run.** The
   auto-merge workflow merges with `GITHUB_TOKEN`, and GitHub's recursion guard suppresses workflow
   triggers for pushes made with that token, so `on: push` never fires for those commits. Measured

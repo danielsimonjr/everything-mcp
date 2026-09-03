@@ -16,11 +16,20 @@ Model Context Protocol (MCP) server for [Everything](https://www.voidtools.com/)
 
 ## Prerequisites
 
-**Windows Only** - Everything search engine must be installed:
+**Windows Only** - Everything and its command-line client must be installed:
 
 1. **Download Everything**: https://www.voidtools.com/downloads/
 2. **Install Everything** and let it index your drives
-3. **Verify es.exe** (command-line interface) is available at: `C:\Program Files\Everything\es.exe`
+3. **Keep the Everything search client running** in the logged-in Windows user session. The
+   Windows service alone does not provide the IPC endpoint used by `es.exe`. To start the client
+   without opening a search window, run `Everything.exe -startup`.
+4. **Install ES 1.1.0.37 or newer** from the
+   [official ES releases](https://github.com/voidtools/ES/releases). This minimum version is
+   required for safe command-line argument separation.
+5. **Verify the IPC connection**:
+   ```powershell
+   es.exe -timeout 5000 -get-everything-version
+   ```
 
 ## Installation
 
@@ -72,7 +81,8 @@ Add to your `claude_desktop_config.json`:
 ```
 
 #### Custom es.exe Path
-If es.exe is not in your PATH, set the `ES_PATH` environment variable:
+If `es.exe` is not in one of the automatically probed install locations, set `ES_PATH` to its
+absolute path:
 
 ```json
 {
@@ -81,7 +91,7 @@ If es.exe is not in your PATH, set the `ES_PATH` environment variable:
       "command": "npx",
       "args": ["-y", "@danielsimonjr/everything-mcp"],
       "env": {
-        "ES_PATH": "C:\\\\Program Files\\\\Everything\\\\es.exe"
+        "ES_PATH": "C:\\Program Files\\Everything\\es.exe"
       }
     }
   }
@@ -111,7 +121,7 @@ Search for files and folders using Everything's powerful search syntax.
 
 **Parameters:**
 - `query` (required): Search query using Everything syntax
-- `maxResults` (optional): Maximum number of results (default: 50)
+- `maxResults` (optional): Maximum number of results (default: 50, maximum: 1000)
 - `regex` (optional): Use regular expression search (default: false)
 - `caseSensitive` (optional): Match case (default: false)
 - `wholeWord` (optional): Match whole words only (default: false)
@@ -122,7 +132,7 @@ Search for files and folders using Everything's powerful search syntax.
 - `sortDescending` (optional): Sort in descending order (default: false)
 - `showSize` (optional): Include file size in results (default: false)
 - `showDateModified` (optional): Include date modified in results (default: false)
-- `parentPath` (optional): Search only within this parent path
+- `parentPath` (optional): Search only within this absolute Windows path
 
 **Example:**
 ```json
@@ -146,7 +156,7 @@ Get detailed information about a specific file.
 **Example:**
 ```json
 {
-  "filename": "C:\\\\Users\\\\username\\\\document.txt"
+  "filename": "C:\\Users\\username\\document.txt"
 }
 ```
 
@@ -196,7 +206,7 @@ Everything supports powerful search syntax:
 - **Directory**: `attrib:D`
 
 ### Path Matching
-- **In folder**: `path:C:\\Users\\`
+- **In folder**: `path:C:\Users\`
 - **Parent**: `parent:Downloads`
 
 ### Advanced
@@ -253,7 +263,7 @@ Claude will use:
 ```json
 {
   "query": "*.py",
-  "parentPath": "C:\\\\Users\\\\username\\\\Documents"
+  "parentPath": "C:\\Users\\username\\Documents"
 }
 ```
 
@@ -261,22 +271,23 @@ Claude will use:
 
 Tell Claude:
 ```
-Get detailed information about C:\\config.json
+Get detailed information about C:\config.json
 ```
 
 Claude will use:
 ```json
 {
-  "filename": "C:\\\\config.json"
+  "filename": "C:\\config.json"
 }
 ```
 
 ## How It Works
 
-1. **Everything Service**: Everything runs as a Windows service, maintaining a real-time index of all files
-2. **es.exe**: Command-line interface to query the Everything database
-3. **MCP Server**: Wraps es.exe and provides MCP tools for Claude
-4. **Instant Results**: Searches complete in milliseconds, even across millions of files
+1. **Everything search client**: Loads the search database and exposes the Everything IPC endpoint in the logged-in user's Windows session
+2. **Everything Service (optional but recommended)**: Performs NTFS indexing and USN journal monitoring so the search client does not need administrator privileges; it does not provide the search IPC endpoint by itself
+3. **es.exe**: Queries the search client through Everything IPC
+4. **MCP Server**: Wraps `es.exe` and exposes read-only MCP tools
+5. **Instant Results**: Searches complete in milliseconds, even across millions of files
 
 ## Troubleshooting
 
@@ -286,11 +297,24 @@ Claude will use:
 
 **Solutions:**
 1. Verify Everything is installed: Download from https://www.voidtools.com/
-2. Ensure Everything service is running (check system tray)
-3. Verify es.exe location:
-   - Default: `C:\\Program Files\\Everything\\es.exe`
-   - Scoop: `C:\\Users\\<username>\\scoop\\apps\\everything\\current\\es.exe`
+2. Verify `es.exe` is version 1.1.0.37 or newer: `es.exe -version`
+3. Verify the `es.exe` location:
+   - Default: `C:\Program Files\Everything\es.exe`
+   - Scoop: `C:\Users\<username>\scoop\apps\everything-cli\current\es.exe`
 4. Set `ES_PATH` environment variable in MCP config
+
+### Everything IPC Unavailable (Exit Code 8)
+
+Exit code 8 means `es.exe` could not find the Everything search client's IPC endpoint.
+
+**Solutions:**
+1. Start the search client in the same logged-in Windows user session: `Everything.exe -startup`
+2. Wait for the Everything database to finish loading, then retry the query
+3. Confirm IPC is enabled in Everything and that you are not using the Lite edition, which does not provide IPC
+4. If you use a named Everything instance, ensure `es.exe` connects to that same instance
+
+Running only the Windows **Everything Service** is not sufficient. The service performs indexing;
+the search client provides the IPC endpoint.
 
 ### No Results Found
 
@@ -308,7 +332,8 @@ Claude will use:
 
 **Issue:** Can't access certain directories
 
-**Solution:** Run Everything as administrator or adjust folder permissions
+**Solution:** Enable the Everything Service and run the search client as the standard user. Adjust
+the indexed folders or their permissions if results are still missing.
 
 ## Development
 
@@ -323,8 +348,10 @@ npm install
 # Make executable
 chmod +x index.js
 
-# Test locally
-node index.js
+# Test and validate both entry points
+npm test
+node --check index.js
+node --check bundle/index.mjs
 ```
 
 ## Contributing
@@ -333,9 +360,10 @@ Contributions welcome! Please:
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+3. Make your changes in both `index.js` and `bundle/index.mjs`; the bundle is committed and is not generated automatically
+4. Run `npm test`, `node --check index.js`, and `node --check bundle/index.mjs`
+5. Stage only the files you changed and review the diff
+6. Submit a pull request
 
 ## License
 

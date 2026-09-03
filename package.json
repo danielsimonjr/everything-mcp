@@ -11,7 +11,9 @@
     "README.md",
     "LICENSE"
   ],
-  "scripts": {},
+  "scripts": {
+    "test": "node --test"
+  },
   "keywords": [
     "mcp",
     "everything",

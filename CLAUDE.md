@@ -28,9 +28,9 @@ Single-file server (`index.js`) using `@modelcontextprotocol/sdk`:
 
 ## External Dependency
 
-Requires `es.exe` (Everything command-line tool):
+Requires `es.exe` 1.1.0.37 or newer (Everything command-line tool):
 - Default path: `C:\Program Files\Everything\es.exe`
-- Scoop: `C:\Users\<user>\scoop\apps\everything\current\es.exe`
+- Scoop: `C:\Users\<user>\scoop\apps\everything-cli\current\es.exe`
 - Override via `ES_PATH` environment variable
 
 ## Tools
