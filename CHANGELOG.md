@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-09-03 - the plugin served ZERO MCP servers
+
+- **`.mcp.json` was missing from the default branch**, so a plugin described as
+  "Everything-search instant file lookup (everything-mcp server)" shipped a skill and no
+  server. Confirmed by the CLI's own component inventory: `claude plugin details everything-mcp`
+  reported `MCP servers (0)` for the deployed v1.2.0.
+- The server binary was present the whole time -- `bundle/index.mjs` is on `main` and answers
+  an MCP `initialize` handshake with
+  `serverInfo {name: everything-mcp, version: 1.2.0}, capabilities.tools`. Only the
+  declaration that launches it was absent, so nothing failed loudly; the plugin simply
+  provided less than its name implies.
+- The file existed only on `ci/windows-leg`, a branch 41 commits behind `main` whose other
+  contributions had already landed by separate routes. Recovered just this file rather than
+  merging a stale line.
+- `.mcp.json` is listed in `.gitignore` (line 34), which is why it never reached `main`: a
+  plain `git add` silently skips it. Committed with a SCOPED `git add -f -- .mcp.json`, the
+  same way `ci/windows-leg` tracks it. Never `git add -f -A`, which would sweep in
+  `node_modules`.
+
 ## [Unreleased]
 
 ### Security
