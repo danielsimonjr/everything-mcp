@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Security
+
+- **`qs` bumped 6.15.2 -> 6.16.0 in the lockfile** (GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g, both
+  MEDIUM, runtime scope). `npm audit --omit=dev` now reports 0 vulnerabilities.
+  **Scope of the exposure, measured rather than assumed:** the published package ships no lockfile,
+  so a consumer installing `@danielsimonjr/everything-mcp@1.2.0` today already resolves `qs` to the
+  patched 6.16.0 — verified by installing the published tarball with `--omit=dev`. What was exposed
+  is anyone running `npm ci` **in this repository**, which pins the vulnerable 6.15.2. Real, but a
+  developer-environment issue rather than a shipped one.
+
+
 ### Fixed
 
 - **Auto-merged Dependabot commits could land on the default branch with no CI run.** The
