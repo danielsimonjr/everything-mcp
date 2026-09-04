@@ -23,6 +23,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Version bumped to 1.2.1 so the `.mcp.json` fix in deee0bb actually DEPLOYS.** That commit
+  declared the server correctly, but left the version at 1.2.0 - and the plugin cache is
+  version-keyed (`plugins/cache/<marketplace>/<plugin>/<version>/`). **Measured, not assumed:**
+  after deee0bb landed, `claude plugin marketplace update local-marketplace` reported success and
+  the deployed `1.2.0` directory still had NO `.mcp.json`. A correct fix that never reaches the
+  cache is indistinguishable, from the running machine's side, from no fix at all.
+  A marketplace refresh reporting "Successfully updated" is therefore not evidence that any plugin
+  changed; check the version directory for the file you shipped.
+
 ### Security
 
 - **`qs` bumped 6.15.2 -> 6.16.0 in the lockfile** (GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g, both
