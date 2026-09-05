@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-09-05 - port to the MCP 2.0 SDK (server + core @2.0.0)
+
+- Replaced `@modelcontextprotocol/sdk@1.x` with `@modelcontextprotocol/server` +
+  `@modelcontextprotocol/core` @^2.0.0 in `index.js`. Not an import swap -- v2 registers
+  handlers by spec method name (`setRequestHandler("tools/list", fn)` /
+  `setRequestHandler("tools/call", fn)`, not by schema object -- the v1 form throws at
+  runtime), and `serveStdio()` replaces `connect(new StdioServerTransport())`.
+- Regenerated `bundle/index.mjs` from `index.js` with esbuild against the new
+  dependency tree, rather than hand-porting ~15,000 lines of vendored v1 SDK code inline
+  in the bundle -- there is no committed build script, so this was done ad hoc and the
+  bundle's shim header was preserved to match the existing format.
+- Verified against the BUILT bundle over a real stdio round-trip, not just a passing
+  `node --check`: a live `initialize` negotiates `2025-11-25` (the SDK's actual
+  `LATEST_PROTOCOL_VERSION`) and `tools/list` returns both tools (`search`,
+  `get_file_info`).
+
 ## 2026-09-03 - the plugin served ZERO MCP servers
 
 - **`.mcp.json` was missing from the default branch**, so a plugin described as

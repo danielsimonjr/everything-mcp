@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 
-const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
-const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
-const {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} = require("@modelcontextprotocol/sdk/types.js");
+const { Server } = require("@modelcontextprotocol/server");
+const { serveStdio } = require("@modelcontextprotocol/server/stdio");
 const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
@@ -85,7 +81,10 @@ const server = new Server(
 /**
  * List available tools
  */
-server.setRequestHandler(ListToolsRequestSchema, async () => {
+// MCP 2.0 registers handlers by SPEC METHOD NAME, not by a schema object. The
+// v1 form setRequestHandler(ListToolsRequestSchema, fn) throws here: "is not a
+// spec request method; pass schemas as the second argument to setRequestHandler()".
+server.setRequestHandler("tools/list", async () => {
   return {
     tools: [
       {
@@ -194,7 +193,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 /**
  * Handle tool execution
  */
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler("tools/call", async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
@@ -301,19 +300,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 /**
  * Start the server
  */
-async function main() {
-  // Exit cleanly when our stdio pipe closes (e.g., Claude Code's
-  // /reload-plugins). Without this, the spawned `es.exe` child handles can
-  // keep the event loop alive after the transport closes, leaving an orphan.
-  process.stdin.on("end", () => process.exit(0));
-  process.stdin.on("close", () => process.exit(0));
+// Exit cleanly when our stdio pipe closes (e.g., Claude Code's
+// /reload-plugins). Without this, the spawned `es.exe` child handles can
+// keep the event loop alive after the transport closes, leaving an orphan.
+process.stdin.on("end", () => process.exit(0));
+process.stdin.on("close", () => process.exit(0));
 
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("Everything MCP server running on stdio");
-}
-
-main().catch((error) => {
-  console.error("Fatal error:", error);
-  process.exit(1);
+// `serveStdio` replaces the v1 connect(new StdioServerTransport()) dance and
+// owns the transport lifecycle, including legacy-era clients.
+serveStdio(() => server, {
+  legacy: "serve",
+  onerror: (error) => console.error("Fatal error:", error),
 });
+console.error("Everything MCP server running on stdio");
