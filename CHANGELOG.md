@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## 2026-09-05 - port to the MCP 2.0 SDK (server + core @2.0.0)
+## [2.0.0] - 2026-09-05 - port to the MCP 2.0 SDK (server + core @2.0.0)
+
+Released as a DEPENDENCY MAJOR. The runtime moved from `@modelcontextprotocol/sdk@1.x` to
+`@modelcontextprotocol/{server,core}@2.x`, which is breaking for anything resolving alongside it.
+**The wire protocol is UNCHANGED at `2025-11-25`** before and after -- verified by a live stdio
+round trip against the shipped `bundle/index.mjs`, not the source. The v2 package major and the
+protocol era are separate facts.
 
 - Replaced `@modelcontextprotocol/sdk@1.x` with `@modelcontextprotocol/server` +
   `@modelcontextprotocol/core` @^2.0.0 in `index.js`. Not an import swap -- v2 registers

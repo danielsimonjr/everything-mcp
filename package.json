@@ -1,6 +1,6 @@
 {
   "name": "@danielsimonjr/everything-mcp",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "MCP server for Everything search engine - blazing fast file search for Windows",
   "main": "index.js",
   "bin": {
