@@ -6,32 +6,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 MCP server for [Everything](https://www.voidtools.com/), the blazing-fast Windows file search engine. Provides instant file/folder search through MCP by wrapping the `es.exe` command-line interface.
 
-**Platform:** Windows only
+**Platform:** Windows only  
+**Runtime:** TypeScript on Bun (MCP SDK v2)
 
 ## Development
 
 ```bash
-npm install        # Install dependencies
-node index.js      # Run server locally
+bun install          # Install dependencies
+bun run src/index.ts # Run server locally (stdio)
+bun test             # Unit tests
+bun run typecheck    # tsc --noEmit
+bun run build        # Bundle → bundle/index.js (node-target, for the plugin)
+bun run smoke        # Live stdio initialize + tools/list
 ```
-
-No build step required - plain CommonJS JavaScript.
 
 ## Architecture
 
-Single-file server (`index.js`) using `@modelcontextprotocol/sdk`:
+TypeScript sources under `src/`, using `@modelcontextprotocol/server` v2:
 
-- **executeEverything()**: Spawns `es.exe` with arguments, returns stdout/stderr
-- **ListToolsRequestSchema handler**: Defines two tools (`search`, `get_file_info`)
-- **CallToolRequestSchema handler**: Executes tools by building es.exe argument arrays
-- **Transport**: StdioServerTransport for MCP communication
+- **`createServer()`** (`src/server.ts`): Builds an `McpServer` and `registerTool`s `search` + `get_file_info` with Zod input schemas
+- **`resolveEsPath()` / `executeEverything()`**: Absolute-path-only `es.exe` discovery and spawn
+- **`src/index.ts`**: `serveStdio(() => createServer())` entrypoint
+- **`bundle/index.js`**: `bun build` output launched by `.mcp.json` via `node` (self-contained; no `node_modules` required at plugin runtime)
 
 ## External Dependency
 
 Requires `es.exe` (Everything command-line tool):
-- Default path: `C:\Program Files\Everything\es.exe`
-- Scoop: `C:\Users\<user>\scoop\apps\everything\current\es.exe`
-- Override via `ES_PATH` environment variable
+- Default probe: Program Files / Program Files (x86) / WinGet Links / Scoop
+- Override via `ES_PATH` environment variable (must be absolute)
 
 ## Tools
 

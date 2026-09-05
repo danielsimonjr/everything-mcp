@@ -1,17 +1,27 @@
 {
   "name": "@danielsimonjr/everything-mcp",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "MCP server for Everything search engine - blazing fast file search for Windows",
-  "main": "index.js",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
   "bin": {
-    "everything-mcp": "./index.js"
+    "everything-mcp": "./src/index.ts"
   },
   "files": [
-    "index.js",
+    "src",
+    "bundle",
     "README.md",
     "LICENSE"
   ],
-  "scripts": {},
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "bun build ./src/index.ts --outfile=bundle/index.js --target=node --format=esm --minify",
+    "test": "bun test",
+    "smoke": "bun run scripts/stdio-smoke.ts",
+    "prepublishOnly": "bun run typecheck && bun run build && bun run smoke"
+  },
   "keywords": [
     "mcp",
     "everything",
@@ -19,17 +29,23 @@
     "file-search",
     "windows",
     "es.exe",
-    "voidtools"
+    "voidtools",
+    "bun"
   ],
   "author": "Daniel Simon Jr. (https://github.com/danielsimonjr)",
   "license": "MIT",
-  "type": "commonjs",
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "packageManager": "bun@1.4.2",
   "dependencies": {
     "@modelcontextprotocol/core": "^2.0.0",
-    "@modelcontextprotocol/server": "^2.0.0"
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.2.0"
   },
-  "overrides": {
-    "@hono/node-server": "^2.0.5"
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "typescript": "^5.9.0"
   },
   "repository": {
     "type": "git",
