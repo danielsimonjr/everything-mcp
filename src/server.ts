@@ -9,7 +9,7 @@ import { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 
 export const SERVER_NAME = "everything-mcp";
-export const SERVER_VERSION = "3.0.0";
+export const SERVER_VERSION = "3.1.0";
 
 /**
  * Resolve es.exe to an ABSOLUTE path. Never spawn a bare filename on Windows,
@@ -162,10 +162,32 @@ export const searchInputSchema = z.object({
     .boolean()
     .default(false)
     .describe("Include date modified in results"),
+  path: z
+    .string()
+    .optional()
+    .describe(
+      "Search INSIDE this folder, including its subfolders. This is the usual " +
+        '"search in this directory" option (es.exe -path). Example: ' +
+        String.raw`"C:\Users\me\Code" matches C:\Users\me\Code\proj\a.csproj.`,
+    ),
   parentPath: z
     .string()
     .optional()
-    .describe("Search only within this parent path"),
+    .describe(
+      "Search inside the PARENT of this path -- NOT inside the path itself " +
+        "(es.exe -parent-path). Example: " +
+        String.raw`"C:\Users\me\Code" searches C:\Users\me. ` +
+        'For "search in this folder", use `path` instead.',
+    ),
+  parent: z
+    .string()
+    .optional()
+    .describe(
+      "Match only items whose IMMEDIATE parent folder is exactly this path, " +
+        "excluding deeper subfolders (es.exe -parent). Example: " +
+        String.raw`"C:\Users\me\Code" matches C:\Users\me\Code\a.csproj ` +
+        String.raw`but not C:\Users\me\Code\proj\a.csproj.`,
+    ),
 });
 
 export const getFileInfoInputSchema = z.object({
@@ -213,7 +235,9 @@ export function createServer(): McpServer {
           sortDescending,
           showSize,
           showDateModified,
+          path: searchPath,
           parentPath,
+          parent,
         } = args;
 
         const esArgs: string[] = [];
@@ -228,8 +252,20 @@ export function createServer(): McpServer {
         if (foldersOnly) esArgs.push("/ad");
         if (filesOnly) esArgs.push("/a-d");
 
+        // Three distinct es.exe scopes, and they are easy to confuse -- issue #27 was
+        // filed because only `-parent-path` was exposed and its description read as
+        // though it meant `-path`. Verified against es.exe directly:
+        //   -path        <dir>  items inside dir, recursively
+        //   -parent-path <dir>  items inside dir's PARENT
+        //   -parent      <dir>  items whose immediate parent is exactly dir
+        if (searchPath) {
+          esArgs.push("-path", searchPath);
+        }
         if (parentPath) {
           esArgs.push("-parent-path", parentPath);
+        }
+        if (parent) {
+          esArgs.push("-parent", parent);
         }
 
         if (sortBy) {

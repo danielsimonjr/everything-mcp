@@ -34,6 +34,40 @@ describe("resolveEsPath", () => {
   });
 });
 
+describe("issue #27 — the three es.exe path scopes", () => {
+  // Reported by BradKnowles: a search for .csproj under C:\Users\Brad\Code returned all of
+  // C:\Users\Brad. Only `-parent-path` was exposed, and it was described as "Search only
+  // within this parent path" -- which reads as "within this path". Verified against the real
+  // es.exe: -parent-path searches the PARENT of its argument, -path searches inside it.
+  test("all three scopes are accepted and independent", () => {
+    const parsed = searchInputSchema.parse({
+      query: "*.csproj",
+      path: "C:\Users\me\Code",
+      parentPath: "C:\Users\me\Code",
+      parent: "C:\Users\me\Code",
+    });
+    expect(parsed.path).toBe("C:\Users\me\Code");
+    expect(parsed.parentPath).toBe("C:\Users\me\Code");
+    expect(parsed.parent).toBe("C:\Users\me\Code");
+  });
+
+  test("every scope stays optional, so existing callers are unaffected", () => {
+    const parsed = searchInputSchema.parse({ query: "*.csproj" });
+    expect(parsed.path).toBeUndefined();
+    expect(parsed.parentPath).toBeUndefined();
+    expect(parsed.parent).toBeUndefined();
+  });
+
+  test("parentPath's description no longer reads as \"inside this path\"", () => {
+    // The description is what the MODEL reads to choose a flag, so it is the fix.
+    const shape = searchInputSchema.shape as Record<string, { description?: string }>;
+    const desc = shape.parentPath?.description ?? "";
+    expect(desc).toContain("PARENT");
+    expect(desc).toContain("NOT inside the path itself");
+    expect(shape.path?.description ?? "").toContain("INSIDE");
+  });
+});
+
 describe("schemas", () => {
   test("search requires query and applies defaults", () => {
     const parsed = searchInputSchema.parse({ query: "*.ts" });
