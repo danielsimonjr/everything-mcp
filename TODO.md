@@ -1,18 +1,25 @@
 # TODO.md — everything-mcp
 
 Open work and recently-done, for continuity. Pairs with `AGENTS.md` / `MEMORY.md`.
-**Last updated:** 2026-07-22
+**Last updated:** 2026-09-05
 
 ## Open
 
-- [ ] **Redeploy source → runtime.** The running MCP loads
-      `%USERPROFILE%\servers\src\everything-mcp\index.js`, a copy that has diverged
-      from this repo. Sync it (copy or symlink) so runtime matches `main`, then restart
-      Claude Code.
-- [ ] **Add a real build step.** With no `esbuild`/build script, `bundle/index.mjs` is
-      hand-edited to mirror `index.js` (error-prone). A `scripts.build` (esbuild:
-      `--bundle --platform=node --format=esm --outfile=bundle/index.mjs`) would
-      regenerate it — verify the banner/shims match the current bundle first.
+- [ ] **Redeploy source → runtime.** Sync the running Claude Code plugin / servers
+      copy so runtime matches `main`, then restart Claude Code.
+- [ ] **Publish `@danielsimonjr/everything-mcp@3.0.0` to npm** after CI is green
+      (Bun is required for the `bin` entry that runs `src/index.ts`; the plugin
+      path keeps using the node-target `bundle/index.js`).
+
+## Done (2026-09-05)
+
+- [x] TypeScript-on-Bun migration (`src/`, `bun.lock`, `tsconfig.json`).
+- [x] Idiomatic MCP 2.0: `McpServer` + `registerTool` + Zod (replacing low-level
+      `Server` / `setRequestHandler` method-string handlers).
+- [x] Real build step: `bun run build` → `bundle/index.js`; removed hand-edited
+      `bundle/index.mjs` and CommonJS `index.js`.
+- [x] CI on Bun (typecheck, test, build, stdio smoke) for ubuntu + windows.
+- [x] Lazy `resolveEsPath()` so initialize / tools/list work without `es.exe`.
 
 ## Done (2026-07-22)
 

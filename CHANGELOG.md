@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2026-09-05 - TypeScript-on-Bun + idiomatic MCP 2.0
+
+Released as a RUNTIME MAJOR. Development and the npm `bin` entry now require
+[Bun](https://bun.sh). The Claude Code plugin path still launches a **node-target**
+self-contained `bundle/index.js` (no Bun required on the host).
+
+- **TypeScript on Bun.** Replaced CommonJS `index.js` with `src/index.ts` +
+  `src/server.ts`. Package manager is Bun (`bun.lock`); `package-lock.json` removed.
+- **Idiomatic MCP 2.0 API.** Moved from low-level `Server` +
+  `setRequestHandler("tools/list"|"tools/call", …)` to `McpServer` +
+  `registerTool` with Zod `inputSchema`s (`zod/v4`). `serveStdio(() => createServer())`
+  remains the transport entry.
+- **Real build step.** `bun run build` regenerates `bundle/index.js` via
+  `bun build --target=node --format=esm`. Removed the hand-maintained
+  `bundle/index.mjs` (~35k lines of vendored SDK).
+- **CI.** `oven-sh/setup-bun`; runs `typecheck`, `bun test`, `build`, and a live
+  stdio smoke (`initialize` + `tools/list`) on ubuntu + windows.
+- **Lazy `es.exe` resolution.** `resolveEsPath()` runs on first tool call so
+  handshake / `tools/list` succeed in CI without Everything installed.
+- Wire protocol still negotiates `2025-11-25` (SDK `LATEST_PROTOCOL_VERSION`).
+
 ## [2.0.0] - 2026-09-05 - port to the MCP 2.0 SDK (server + core @2.0.0)
 
 Released as a DEPENDENCY MAJOR. The runtime moved from `@modelcontextprotocol/sdk@1.x` to

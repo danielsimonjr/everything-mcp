@@ -4,7 +4,7 @@
       "type": "stdio",
       "command": "node",
       "args": [
-        "${CLAUDE_PLUGIN_ROOT}/bundle/index.mjs"
+        "${CLAUDE_PLUGIN_ROOT}/bundle/index.js"
       ],
       "env": {
         "ES_PATH": "C:\\Program Files\\Everything\\es.exe"

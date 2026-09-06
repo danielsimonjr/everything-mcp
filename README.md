@@ -2,7 +2,8 @@
 
 [![NPM](https://img.shields.io/npm/v/@danielsimonjr/everything-mcp.svg)](https://www.npmjs.com/package/@danielsimonjr/everything-mcp)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![MCP](https://img.shields.io/badge/MCP-1.0-purple.svg)](https://modelcontextprotocol.io)
+[![MCP](https://img.shields.io/badge/MCP-2.0-purple.svg)](https://modelcontextprotocol.io)
+[![Bun](https://img.shields.io/badge/runtime-Bun-fbf0df.svg)](https://bun.sh)
 
 Model Context Protocol (MCP) server for [Everything](https://www.voidtools.com/), the blazing-fast file search engine for Windows. Enables instant file and folder searching through MCP.
 
@@ -21,25 +22,26 @@ Model Context Protocol (MCP) server for [Everything](https://www.voidtools.com/)
 1. **Download Everything**: https://www.voidtools.com/downloads/
 2. **Install Everything** and let it index your drives
 3. **Verify es.exe** (command-line interface) is available at: `C:\Program Files\Everything\es.exe`
+4. **Bun** (for development / the npm `bin` entry): https://bun.sh
 
 ## Installation
 
-### Using NPX (Recommended)
+### Using Bun (Recommended)
 ```bash
-npx @danielsimonjr/everything-mcp
+bunx @danielsimonjr/everything-mcp
 ```
 
 ### Global Installation
 ```bash
-npm install -g @danielsimonjr/everything-mcp
+bun add -g @danielsimonjr/everything-mcp
 ```
 
 ### From Source
 ```bash
 git clone https://github.com/danielsimonjr/everything-mcp.git
 cd everything-mcp
-npm install
-chmod +x index.js
+bun install
+bun run build
 ```
 
 ## Configuration
@@ -48,13 +50,13 @@ chmod +x index.js
 
 Add to your `claude_desktop_config.json`:
 
-#### Using NPX
+#### Using Bunx
 ```json
 {
   "mcpServers": {
     "everything": {
-      "command": "npx",
-      "args": ["-y", "@danielsimonjr/everything-mcp"]
+      "command": "bunx",
+      "args": ["@danielsimonjr/everything-mcp"]
     }
   }
 }
@@ -72,14 +74,14 @@ Add to your `claude_desktop_config.json`:
 ```
 
 #### Custom es.exe Path
-If es.exe is not in your PATH, set the `ES_PATH` environment variable:
+If es.exe is not in a probed install location, set the `ES_PATH` environment variable:
 
 ```json
 {
   "mcpServers": {
     "everything": {
-      "command": "npx",
-      "args": ["-y", "@danielsimonjr/everything-mcp"],
+      "command": "bunx",
+      "args": ["@danielsimonjr/everything-mcp"],
       "env": {
         "ES_PATH": "C:\\\\Program Files\\\\Everything\\\\es.exe"
       }
@@ -96,8 +98,8 @@ Add to `.vscode/mcp.json`:
 {
   "servers": {
     "everything": {
-      "command": "npx",
-      "args": ["-y", "@danielsimonjr/everything-mcp"]
+      "command": "bunx",
+      "args": ["@danielsimonjr/everything-mcp"]
     }
   }
 }
@@ -317,14 +319,19 @@ Claude will use:
 git clone https://github.com/danielsimonjr/everything-mcp.git
 cd everything-mcp
 
-# Install dependencies
-npm install
+# Install dependencies (Bun)
+bun install
 
-# Make executable
-chmod +x index.js
+# Typecheck / test / build plugin bundle
+bun run typecheck
+bun test
+bun run build
 
-# Test locally
-node index.js
+# Run locally over stdio
+bun run src/index.ts
+
+# Live initialize + tools/list smoke test
+bun run smoke
 ```
 
 ## Contributing
