@@ -22,6 +22,38 @@ All notable changes to this project will be documented in this file.
   `prepublishOnly`. The two are semantically identical — minifier identifier churn — but the
   release is therefore not byte-reproducible from its tag.
 
+## [3.1.0] - 2026-09-06 - the three es.exe path scopes
+
+Fixes [#27](https://github.com/danielsimonjr/everything-mcp/issues/27), reported by
+@BradKnowles: a search for `.csproj` under `C:\Users\Brad\Code` returned results from all
+of `C:\Users\Brad`.
+
+### Added
+
+- **`path`** — search INSIDE a folder and its subfolders (`es.exe -path`). This is the
+  "search in this directory" option, and its absence is what caused #27.
+- **`parent`** — match only items whose IMMEDIATE parent is exactly this path, excluding
+  deeper subfolders (`es.exe -parent`).
+
+### Fixed
+
+- **`parentPath`'s description was actively misleading.** It read *“Search only within this
+  parent path”*, which parses as “within this path” — so the model chose it for “search in
+  this folder” and got the parent instead. It now states that it searches the PARENT and
+  points at `path`.
+
+  The missing options were half the bug. This description was the half that made the wrong
+  answer look right.
+
+  Verified against the real `es.exe` rather than its documentation:
+
+  ```text
+  es -parent-path ...\everything-mcp\src  ->  ...\everything-mcp\node_modules\.bin, .claude
+  es -path        ...\everything-mcp\src  ->  ...\src\index.ts, server.ts, server.test.ts
+  ```
+
+All three options are optional and independent, so existing callers are unaffected.
+
 ## [3.0.0] - 2026-09-05 - TypeScript-on-Bun + idiomatic MCP 2.0
 
 Released as a RUNTIME MAJOR. Development and the npm `bin` entry now require
