@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Noted
+
+- **v3.0.0 released and published 2026-09-06** — tag `v3.0.0` on `99fe4a22`, GitHub release
+  created, `@danielsimonjr/everything-mcp@3.0.0` on npm (verified three ways: `npm view`,
+  `dist-tags latest`, and `npm pack`). The shipped bundle was health-checked *before* release
+  by piping an MCP `initialize` into it under `node` — the `.mcp.json` launch path — and it
+  answered `"version":"3.0.0"`.
+
+  The first publish attempt **failed at `prepublishOnly`** with
+  `TS2688: Cannot find type definition file for 'bun'`, because the publishing machine's
+  `node_modules` was incomplete. `@types/bun` is declared; nothing was published. That gate
+  refusing an incomplete tree is working exactly as intended.
+
+  Recorded in `TODO.md`: the tarball's `bundle/index.js` does not match the committed one
+  (`66ed4877…` vs `b4aa252d…`) because we both commit that file and rebuild it in
+  `prepublishOnly`. The two are semantically identical — minifier identifier churn — but the
+  release is therefore not byte-reproducible from its tag.
+
 ## [3.0.0] - 2026-09-05 - TypeScript-on-Bun + idiomatic MCP 2.0
 
 Released as a RUNTIME MAJOR. Development and the npm `bin` entry now require
