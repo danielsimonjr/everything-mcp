@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 ### Noted
 
+- **TypeScript 5.9.3 -> 7.0.2 (two majors) landed clean** (#28). Verified locally against the
+  whole CI gate before pushing, because a two-major jump earns more than a green install:
+  `tsc --noEmit` exit 0, 9/9 tests, build ok, and the stdio smoke run against the **built
+  bundle** (not the source entry) answering `protocol=2025-11-25 version=3.1.0`.
+
+  The PR first went red at `bun install --frozen-lockfile` -- Dependabot edits `package.json`
+  and never `bun.lock` -- which fires BEFORE any typecheck, so the red check said nothing
+  about TypeScript 7 either way. Eighteenth PR today with that same cause.
+
+  **This repo escapes the workspace-wide TS 7 blocker** because it has no `typescript-eslint`
+  dependency; elsewhere that peer caps TypeScript below 6.1.0 and forces both to move in one
+  PR. `bundle/index.js` rebuilt byte-identically, as expected -- `bun build` transpiles on its
+  own and never invokes `tsc`, so the TypeScript version does not reach the shipped artifact.
+
 - **v3.0.0 released and published 2026-09-06** — tag `v3.0.0` on `99fe4a22`, GitHub release
   created, `@danielsimonjr/everything-mcp@3.0.0` on npm (verified three ways: `npm view`,
   `dist-tags latest`, and `npm pack`). The shipped bundle was health-checked *before* release
