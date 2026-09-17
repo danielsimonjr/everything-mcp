@@ -32,7 +32,7 @@ Open work and recently-done, for continuity. Pairs with `AGENTS.md` / `MEMORY.md
 - [x] Dependabot #29 — override `@hono/node-server` to `>=2.0.5` (→ 2.0.11) (`36ec58f`).
 - [x] Sanitized the maintainer's local path (username → `%USERPROFILE%`) in the docs.
 
-- [ ] **The published bundle can never match the tag: we commit `bundle/index.js` AND
+- [ ] **The published bundle can never match the tag: we commit `plugin/bundle/index.js` AND
       rebuild it in `prepublishOnly`.** Found while publishing v3.0.0 (2026-09-06).
       `prepublishOnly` runs `bun run build`, so the tarball carries a *fresh* bundle while
       the tag carries the committed one. Measured on this release:

@@ -16,8 +16,8 @@ Zod tool schemas, `McpServer.registerTool` + `serveStdio`.
 
 1. **Source vs plugin bundle — rebuild after source edits.**
    - `src/*.ts` — the source Bun runs in development.
-   - `bundle/index.js` — the **built** ESM artifact `.mcp.json` launches with `node`
-     (`${CLAUDE_PLUGIN_ROOT}/bundle/index.js`). Self-contained so the plugin cache
+   - `plugin/bundle/index.js` — the **built** ESM artifact `plugin/.mcp.json` launches with
+     `node` (`${CLAUDE_PLUGIN_ROOT}/bundle/index.js`). Self-contained so the plugin cache
      does not need `node_modules`.
    - Regenerate with `bun run build`. Do not hand-edit the bundle. The old
      `bundle/index.mjs` / CommonJS `index.js` pair is gone.
@@ -37,9 +37,9 @@ Zod tool schemas, `McpServer.registerTool` + `serveStdio`.
    (empty = pure EOL, no real change).
 
 4. **Stage narrowly — never `git add -A`.**
-   Stage only the files you changed (`git add src/ bundle/index.js package.json bun.lock …`)
+   Stage only the files you changed (`git add src/ plugin/bundle/index.js package.json bun.lock …`)
    and verify with `git status --short` (first column = staged) before committing.
-   After a build, stage `bundle/index.js` with the matching source change.
+   After a build, stage `plugin/bundle/index.js` with the matching source change.
 
 5. **`es.exe` must resolve to an ABSOLUTE path — never a bare filename.**
    On Windows, `spawn("es.exe", …)` lets `CreateProcess` search the current working
@@ -72,6 +72,6 @@ bun run typecheck
 bun test
 bun run build
 bun run smoke
-bun run scripts/stdio-smoke.ts node bundle/index.js
+bun run scripts/stdio-smoke.ts node plugin/bundle/index.js
 git diff --cached | grep -i "$USERNAME" || echo "no personal path staged"
 ```

@@ -16,7 +16,7 @@ bun install          # Install dependencies
 bun run src/index.ts # Run server locally (stdio)
 bun test             # Unit tests
 bun run typecheck    # tsc --noEmit
-bun run build        # Bundle → bundle/index.js (node-target, for the plugin)
+bun run build        # Bundle → plugin/bundle/index.js (node-target, for the plugin)
 bun run smoke        # Live stdio initialize + tools/list
 ```
 
@@ -27,7 +27,7 @@ TypeScript sources under `src/`, using `@modelcontextprotocol/server` v2:
 - **`createServer()`** (`src/server.ts`): Builds an `McpServer` and `registerTool`s `search` + `get_file_info` with Zod input schemas
 - **`resolveEsPath()` / `executeEverything()`**: Absolute-path-only `es.exe` discovery and spawn
 - **`src/index.ts`**: `serveStdio(() => createServer())` entrypoint
-- **`bundle/index.js`**: `bun build` output launched by `.mcp.json` via `node` (self-contained; no `node_modules` required at plugin runtime)
+- **`plugin/bundle/index.js`**: `bun build` output launched by `plugin/.mcp.json` via `node` (self-contained; no `node_modules` required at plugin runtime)
 
 ## External Dependency
 

@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-09-17
+
+### Changed
+
+- **The plugin now installs from `plugin/`, so Claude Code no longer installs the dev
+  toolchain into the plugin cache.** The marketplace entry installed the repo root, which
+  holds `package.json` + `bun.lock`. Claude Code's plugin installer runs
+  `bun install --frozen-lockfile --ignore-scripts` when it finds a manifest plus a lockfile
+  at the plugin root, and it has no omit-dev option, so `typescript` and `@types/bun` were
+  installed into the cache. The 3.0.0 cache measured **51 MB of `node_modules` out of 52 MB
+  total**, for a server that needs none of it: `bundle/index.js` is a self-contained
+  `bun build` artifact and imports nothing outside `node:`.
+
+  `plugin/` now holds `.claude-plugin/plugin.json`, `.mcp.json`, `bundle/` and `skills/`
+  only - no `package.json` and no lockfile, so the installer finds nothing to install. The
+  repo root keeps its manifests for development, and `bun run build` writes to
+  `plugin/bundle/index.js`. `bin/es.exe` deliberately stays out of `plugin/`:
+  `resolveEsPath` probes the Program Files, WinGet and scoop install locations and the
+  `ES_PATH` override, and never the repo's own `bin/`. The marketplace entry must become
+  `git-subdir` with `path: "plugin"`.
+
+  Verified from a copy of `plugin/` that carries no `node_modules`: `initialize` and
+  `tools/list` both succeed over stdio and report 2 tools. Repeated with a preload that
+  throws on any non-builtin `require`/`import`: same result. The guard is failure-capable -
+  a deliberate `import "typescript"` under the same preload is denied.
+
+### Fixed
+
+- **`serverInfo.version` reported 3.1.0 while the manifests said something else.**
+  `SERVER_VERSION` is a hardcoded literal in `src/server.ts` and nothing tied it to
+  `package.json`, so the one version a client can actually see drifted. It is now 3.2.0,
+  matching `package.json` and `plugin/.claude-plugin/plugin.json`. The three were already
+  out of step before this release: `package.json` said 3.1.0,
+  `.claude-plugin/plugin.json` said 3.0.0, and the marketplace entry said 1.2.0.
+
+
 ### Noted
 
 - **TypeScript 5.9.3 -> 7.0.2 (two majors) landed clean** (#28). Verified locally against the

@@ -43,4 +43,4 @@ jobs:
       - name: Stdio smoke (source)
         run: bun run scripts/stdio-smoke.ts
       - name: Stdio smoke (built bundle)
-        run: bun run scripts/stdio-smoke.ts node bundle/index.js
+        run: bun run scripts/stdio-smoke.ts node plugin/bundle/index.js

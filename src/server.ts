@@ -9,7 +9,7 @@ import { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 
 export const SERVER_NAME = "everything-mcp";
-export const SERVER_VERSION = "3.1.0";
+export const SERVER_VERSION = "3.2.0";
 
 /**
  * Resolve es.exe to an ABSOLUTE path. Never spawn a bare filename on Windows,
