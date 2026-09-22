@@ -3,6 +3,21 @@ name: Dependabot auto-merge
 # Auto-merges ONLY Dependabot patch/minor bumps, and only via GitHub's auto-merge —
 # so the merge waits for the required CI check (branch protection) to pass first.
 # Major bumps are left for manual review.
+#
+# MERGING WAS REMOVED 2026-09-22. This workflow now LABELS a green patch/minor PR
+# "ready to merge" instead of merging it. The actor gate, metadata fetch and
+# major-bump handling are unchanged.
+#
+# WHY. On 2026-09-21 at 18:27 the repository owner turned auto-merge OFF by hand
+# across several repos, seconds apart. That sweep is the clearest available
+# statement of intent: merges are a human decision here.
+#
+# AND THE TIMING MATTERED. Every Dependabot PR was failing CI on the frozen-lockfile
+# defect, so auto-merge was enabled but could never fire - the bug was an accidental
+# brake. dependabot-bun-lock.yml, added in the SAME commit, fixes that defect and
+# would have RELEASED the brake. The two changes ship together and must never be
+# separated: the lockfile fix alone recreates the state that was manually undone.
+
 on: pull_request
 
 permissions:
@@ -18,9 +33,12 @@ jobs:
         id: meta
         with:
           github-token: ${{ github.token }}
-      - name: Enable auto-merge for patch/minor
+      - name: Label patch/minor as ready to merge
         if: steps.meta.outputs.update-type == 'version-update:semver-patch' || steps.meta.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: |
+          gh pr edit "$PR_URL" --add-label 'ready to merge' \
+            || gh pr comment "$PR_URL" --body \
+              'Patch/minor Dependabot bump. Queued for a human merge once CI is green - this repo does not auto-merge.'
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ github.token }}

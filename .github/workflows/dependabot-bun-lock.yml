@@ -1,0 +1,107 @@
+name: Dependabot bun.lock
+
+# WHY THIS EXISTS. Every Dependabot PR in this repo fails CI at the install step with
+# `error: lockfile had changes, but lockfile is frozen`. Dependabot edits `package.json` and does
+# NOT write `bun.lock`, while CI runs `bun install --frozen-lockfile` — so the two disagree and
+# every job dies before it builds or tests anything. Measured across the fleet 2026-09-22: TWELVE
+# repos carry this exact combination, and the four that had open Dependabot PRs were all failing
+# identically. Unrelated bumps cannot fail identically by coincidence; the defect is in the
+# contract, not in any bump.
+#
+# WHY NOT JUST SWITCH `package-ecosystem` TO `bun`. Because that breaks Dependabot outright. Its
+# bun parser supports only bun.lock lockfileVersion 1 and these repos write version 2, so on the
+# bun ecosystem Dependabot cannot propose updates at all — trading a failing PR for no PR, which
+# is worse because it is silent.
+#
+# WHY NOT JUST DROP --frozen-lockfile. Because CI would then install against an in-memory
+# lockfile, go green, and merge `package.json` bumped with `bun.lock` STILL STALE. Master would
+# carry an inconsistent pair and ITS next frozen check would fail — a bypass that greens the PR
+# and turns master red. The cause survives and the damage moves somewhere more expensive.
+#
+# HOW IT WORKS. Dependabot PRs only, same-repo only: run `bun install` WITHOUT --frozen-lockfile,
+# commit bun.lock if it changed, push. The push uses GITHUB_TOKEN rather than a human identity.
+#
+# THE LOOP GUARD, AND WHY THE LAST STEP IS NOT OPTIONAL. A GITHUB_TOKEN push does not fire
+# `pull_request`, so it cannot retrigger this workflow (good) — but it also leaves the original CI
+# run pinned to the PRE-lockfile SHA (bad). The PR would still read RED against a commit that is
+# no longer at the tip, and the regeneration would look like it had done nothing. So after a
+# lockfile commit we dispatch the CI workflow onto the new ref.
+# ⚠ THE DISPATCHED WORKFLOW FILENAME DIFFERS PER REPO — `ci.yml` here, `test.yml` and
+# `typescript.yml` in siblings — AND A WRONG NAME FAILS SILENTLY, leaving the PR red with no clue
+# why. Verify it against this repo's actual gate before copying this file anywhere.
+#
+# Trigger is `pull_request`, NOT `pull_request_target` — this never checks out untrusted code with
+# write credentials. The same-repo condition below enforces that independently.
+#
+# This file is adapted from the proven original in deepthinking-mcp rather than newly invented.
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+
+# One regeneration at a time per Dependabot branch. A force-push from Dependabot should cancel the
+# in-flight run rather than race two pushes.
+concurrency:
+  group: dependabot-bun-lock-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate-lockfile:
+    name: Regenerate bun.lock
+    if: >-
+      (github.actor == 'dependabot[bot]'
+        || github.event.pull_request.user.login == 'dependabot[bot]')
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    # Sized to the WORK — one `bun install` and a push, not a test tier.
+    timeout-minutes: 10
+    # contents:write to push bun.lock; actions:write to dispatch CI onto that commit, because
+    # GITHUB_TOKEN pushes do not retrigger it. No wider than the auto-merge workflow already holds.
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+        with:
+          bun-version: latest
+
+      - name: Regenerate bun.lock
+        run: bun install
+
+      # TOUCH ONLY bun.lock. If anything else moved, stop rather than guess — a workflow that
+      # commits whatever it happens to find is how an unrelated change rides in under a trusted name.
+      - name: Commit and push bun.lock if it changed
+        id: commit
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain bun.lock)" ]; then
+            echo "bun.lock unchanged — nothing to push"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          OTHER=$(git status --porcelain | grep -v ' bun.lock$' || true)
+          if [ -n "$OTHER" ]; then
+            echo "::error::Refusing to commit — files other than bun.lock changed:"
+            echo "$OTHER"
+            exit 1
+          fi
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add bun.lock
+          git commit -m 'deps: regenerate bun.lock'
+          git push origin "HEAD:${{ github.head_ref }}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch CI on the regenerated commit
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: gh workflow run ci.yml --ref "${{ github.head_ref }}"
