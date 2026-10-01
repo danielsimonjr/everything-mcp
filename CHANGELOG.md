@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Publish to npm on a release tag.** The new workflow `.github/workflows/publish.yml` runs when a `v*` tag is pushed. It refuses a tag that is not exactly the `package.json` version (`scripts/publish-version-guard.mjs`). It skips the publish when that version is already on npm, so a re-run is harmless. It then installs, typechecks, tests, builds, and runs `npm publish --provenance --access public`. The job needs the repository secret `NPM`. If the secret is empty, the first step fails with a clear message and nothing publishes.
+
 ### Fixed
 
 - **Removed the dead root `npm` Dependabot entry.** No dependency-update ecosystem works on a
