@@ -203,6 +203,115 @@ function textResult(text: string, isError = false) {
   };
 }
 
+type SearchInput = z.infer<typeof searchInputSchema>;
+
+/**
+ * Build the es.exe argument list for one `search` call.
+ */
+export function buildSearchArgs(input: SearchInput): string[] {
+  const {
+    query,
+    maxResults,
+    regex,
+    caseSensitive,
+    wholeWord,
+    matchPath,
+    foldersOnly,
+    filesOnly,
+    sortBy,
+    sortDescending,
+    showSize,
+    showDateModified,
+    path: searchPath,
+    parentPath,
+    parent,
+  } = input;
+
+  const esArgs: string[] = [];
+
+  if (caseSensitive) esArgs.push("-case");
+  if (wholeWord) esArgs.push("-whole-word");
+  if (matchPath) esArgs.push("-match-path");
+
+  esArgs.push("-n", String(maxResults));
+
+  if (foldersOnly) esArgs.push("/ad");
+  if (filesOnly) esArgs.push("/a-d");
+
+  // Three distinct es.exe scopes, and they are easy to confuse -- issue #27 was
+  // filed because only `-parent-path` was exposed and its description read as
+  // though it meant `-path`. Verified against es.exe directly:
+  //   -path        <dir>  items inside dir, recursively
+  //   -parent-path <dir>  items inside dir's PARENT
+  //   -parent      <dir>  items whose immediate parent is exactly dir
+  if (searchPath) {
+    esArgs.push("-path", searchPath);
+  }
+  if (parentPath) {
+    esArgs.push("-parent-path", parentPath);
+  }
+  if (parent) {
+    esArgs.push("-parent", parent);
+  }
+
+  if (sortBy) {
+    const sortOrder = sortDescending ? "-descending" : "-ascending";
+    esArgs.push(`-sort-${sortBy}${sortOrder}`);
+  }
+
+  if (showSize) esArgs.push("-size");
+  if (showDateModified) esArgs.push("-date-modified");
+
+  esArgs.push(...queryArgs(query, regex));
+
+  return esArgs;
+}
+
+/**
+ * Turn a query into the es.exe arguments that come last.
+ *
+ * es.exe reads one argument that contains a space as an exact phrase. The query is therefore
+ * split at whitespace outside double quotes, and each term becomes its own argument. A quoted
+ * group stays one argument without its quote characters. A term that starts with - or / is
+ * refused, because es.exe reads it as a switch. In regex mode the whole pattern is one argument
+ * placed after -regex, because es.exe takes the argument after -regex as the pattern.
+ */
+export function queryArgs(query: string, regex: boolean): string[] {
+  if (regex) return ["-regex", query];
+
+  const terms: string[] = [];
+  let current = "";
+  let inTerm = false;
+  let inQuote = false;
+  for (const ch of query) {
+    if (ch === '"') {
+      inQuote = !inQuote;
+      inTerm = true;
+    } else if (!inQuote && /\s/.test(ch)) {
+      if (inTerm) terms.push(current);
+      current = "";
+      inTerm = false;
+    } else {
+      current += ch;
+      inTerm = true;
+    }
+  }
+  if (inQuote) {
+    throw new Error("Unbalanced double quote in the query. Add the closing quote.");
+  }
+  if (inTerm) terms.push(current);
+
+  const nonEmpty = terms.filter((term) => term.length > 0);
+  for (const term of nonEmpty) {
+    if (term.startsWith("-") || term.startsWith("/")) {
+      throw new Error(
+        `Search term "${term}" starts with - or /. es.exe reads such a term as an option. Add a wildcard in front of it.`,
+      );
+    }
+  }
+  return nonEmpty;
+}
+
 /**
  * Build a configured McpServer.
  */
@@ -222,61 +331,7 @@ export function createServer(): McpServer {
     },
     async (args) => {
       try {
-        const {
-          query,
-          maxResults,
-          regex,
-          caseSensitive,
-          wholeWord,
-          matchPath,
-          foldersOnly,
-          filesOnly,
-          sortBy,
-          sortDescending,
-          showSize,
-          showDateModified,
-          path: searchPath,
-          parentPath,
-          parent,
-        } = args;
-
-        const esArgs: string[] = [];
-
-        if (regex) esArgs.push("-regex");
-        if (caseSensitive) esArgs.push("-case");
-        if (wholeWord) esArgs.push("-whole-word");
-        if (matchPath) esArgs.push("-match-path");
-
-        esArgs.push("-n", String(maxResults));
-
-        if (foldersOnly) esArgs.push("/ad");
-        if (filesOnly) esArgs.push("/a-d");
-
-        // Three distinct es.exe scopes, and they are easy to confuse -- issue #27 was
-        // filed because only `-parent-path` was exposed and its description read as
-        // though it meant `-path`. Verified against es.exe directly:
-        //   -path        <dir>  items inside dir, recursively
-        //   -parent-path <dir>  items inside dir's PARENT
-        //   -parent      <dir>  items whose immediate parent is exactly dir
-        if (searchPath) {
-          esArgs.push("-path", searchPath);
-        }
-        if (parentPath) {
-          esArgs.push("-parent-path", parentPath);
-        }
-        if (parent) {
-          esArgs.push("-parent", parent);
-        }
-
-        if (sortBy) {
-          const sortOrder = sortDescending ? "-descending" : "-ascending";
-          esArgs.push(`-sort-${sortBy}${sortOrder}`);
-        }
-
-        if (showSize) esArgs.push("-size");
-        if (showDateModified) esArgs.push("-date-modified");
-
-        esArgs.push(query);
+        const esArgs = buildSearchArgs(args);
 
         const result = await executeEverything(esArgs);
         return textResult(result.stdout || "No results found");
