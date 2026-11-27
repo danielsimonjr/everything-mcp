@@ -24,6 +24,16 @@ All notable changes to this project will be documented in this file.
   Security alerts are unaffected; automated remediation is what stops. `github-actions` updates
   continue.
 
+- **Queries with several terms or a function return matches.** es.exe reads one argument that
+  contains a space as an exact phrase. A query such as `ext:md Deep`, `TODO.md size:>1mb` or
+  `claude config` therefore returned "No results found". The server now sends each unquoted term as
+  its own argument. A quoted group stays one phrase, and an unbalanced quote is refused. A term that
+  starts with `-` or `/` is refused, because es.exe reads it as a switch. `-help` printed the es.exe
+  help text before this change.
+- **Regex search returns matches.** The `-regex` argument came before `-n`, so es.exe read `-n` as
+  the pattern and every regex search returned "No results found". `-regex` now comes directly before
+  the pattern.
+
 ## [3.2.0] - 2026-09-17
 
 ### Changed
