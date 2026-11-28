@@ -16,5 +16,5 @@
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "scripts/check-bundle-content.ts"]
 }

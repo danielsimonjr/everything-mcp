@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- **CI now proves the committed plugin bundle equals a fresh build.** New script `scripts/check-bundle-content.ts` (`bun run check:bundle-content`) builds into a temporary folder with the `build` command from `package.json`, compares the bytes with `plugin/bundle/index.js`, and names the first differing byte on a mismatch. The Windows leg of CI runs it before the build step.
+
 ## [3.2.1] - 2026-11-27
 
 ### Added
