@@ -18,6 +18,7 @@
     "start": "bun run src/index.ts",
     "typecheck": "tsc --noEmit",
     "build": "bun build ./src/index.ts --outfile=plugin/bundle/index.js --target=node --format=esm --minify",
+    "check:bundle-content": "bun run scripts/check-bundle-content.ts",
     "test": "bun test",
     "smoke": "bun run scripts/stdio-smoke.ts",
     "prepublishOnly": "bun run typecheck && bun run build && bun run smoke"

@@ -39,6 +39,11 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
       - run: bun test
+      # Before the build: `bun run build` overwrites the committed bundle in the working tree.
+      # Windows only: the production OS, where the committed bundle is built; Ubuntu is not measured.
+      - name: Bundle content check
+        if: matrix.os == 'windows-latest'
+        run: bun run check:bundle-content
       - run: bun run build
       - name: Stdio smoke (source)
         run: bun run scripts/stdio-smoke.ts
